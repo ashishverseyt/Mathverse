@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>MathVerse — All-in-One Math Learning Platform</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      :root {
+        --bg-dark: #071124;
+        --bg-soft: rgba(255,255,255,0.06);
+        --accent-cyan: #7be9ff;
+        --accent-pink: #ff9f7b;
+        --accent-purple: #b88fff;
+        --text-primary: #e6eef8;
+        --text-muted: #b0c4de;
+        --card-bg: rgba(255,255,255,0.05);
+        --card-border: rgba(255,255,255,0.1);
+        --shadow: 0 22px 70px rgba(3, 10, 30, 0.35);
+      }
+      body {
+        font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(180deg, #071124 0%, #0f1724 100%);
+        color: var(--text-primary);
+        padding: 2rem;
+        min-height: 100vh;
+        -webkit-font-smoothing:antialiased;
+        -moz-osx-font-smoothing:grayscale;
+        position: relative;
+        overflow-x: hidden;
+      }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: -1;
+        background-image:
+          linear-gradient(rgba(123, 181, 255, 0.12) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(123, 181, 255, 0.12) 1px, transparent 1px),
+          radial-gradient(circle at 20% 14%, rgba(123, 181, 255, 0.08), transparent 15%),
+          radial-gradient(circle at 78% 88%, rgba(184, 143, 255, 0.06), transparent 15%);
+        background-size: 48px 48px, 48px 48px, auto, auto;
+        background-repeat: repeat, repeat, no-repeat, no-repeat;
+      }
+
+      body.light-theme::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: -1;
+        opacity: 1;
+        background-image:
+          linear-gradient(rgba(103, 138, 197, 0.18) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(103, 138, 197, 0.18) 1px, transparent 1px),
+          radial-gradient(circle at 18% 14%, rgba(123, 181, 255, 0.12), transparent 16%),
+          radial-gradient(circle at 78% 88%, rgba(184, 143, 255, 0.09), transparent 16%);
+        background-size: 48px 48px, 48px 48px, auto, auto;
+        background-repeat: repeat, repeat, no-repeat, no-repeat;
+      }
+      header {
+        text-align: center;
+        margin-bottom: 1.25rem;
+      }
+      #heading1 {
+        font-size: 4.2rem;
+        margin-bottom: -0.4rem;
+        
+      }
+      #heading2 {
+        font-size: 2.25rem;
+        margin-bottom: 0.25rem;
+        background: linear-gradient(90deg, #7be9ff 0%, #9d7bff 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      body:not(.light-theme) #heading2 {
+        background: none;
+        -webkit-background-clip: initial;
+        background-clip: initial;
+        -webkit-text-fill-color: initial;
+        color: #7be9ff;
+        text-shadow: none !important;
+      }
+      body:not(.light-theme) #heading1,
+      body:not(.light-theme) .hero-title,
+      body:not(.light-theme) .hero-tag,
+      body:not(.light-theme) .hero-badge,
+      body:not(.light-theme) .tab-btn,
+      body:not(.light-theme) .cta,
+      body:not(.light-theme) .subtitle {
+        text-shadow: none !important;
+      }
+      body:not(.light-theme) .hero-title { color: #eaf6ff; }
+      body:not(.light-theme) .hero-tag { color: #cfeeff; }
+      body:not(.light-theme) .hero-badge { color: #d7f1ff; }
+      body:not(.light-theme) .tab-btn { color: #e6eef8; }
+      body:not(.light-theme) .cta { color: #021025; }
+      .subtitle { font-size: 1rem; color: #8e8e8e; }
+      .container { max-width: 1200px; margin: 0 auto; }
+      .tabs {
+        display: flex;
+        gap: 0.6rem;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+      }
+      .tab-btn {
+        padding: 0.6rem 1.1rem;
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 999px;
+        background: rgba(255,255,255,0.12);
+        color: #f8fbff;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(.2,.9,.2,1);
+        font-size: 0.9rem;
+        font-weight: 600;
+        backdrop-filter: none;
+      }
+      .tab-btn:hover {
+        transform: translateY(-3px);
+        background: rgba(255,255,255,0.2);
+        box-shadow: 0 14px 28px rgba(0,0,0,0.22);
+      }
+      .tab-btn.active {
+        background: linear-gradient(135deg, rgba(111,211,255,0.24), rgba(184,143,255,0.24));
+        color: #ffffff;
+        border-color: rgba(111,211,255,0.45);
+        box-shadow: 0 14px 38px rgba(74, 158, 255, 0.25);
+        transform: translateY(-2px) scale(1.02);
+      }
+      .tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease;
+      }
+      .tab-content.active { display: block; }
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      .card {
+        background: var(--card-bg);
+        padding: 1.6rem;
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--card-border);
+        backdrop-filter: blur(10px) saturate(130%);
+      }
+      .card h3 { margin-bottom: 1rem; color: #ffd8a8; }
+      .card h3 { margin-bottom: 1rem; color: #4a9eff; }
+      .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 2rem;
+        border-radius: 24px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.14);
+        box-shadow: 0 30px 90px rgba(3, 10, 30, 0.3);
+        margin-bottom: 1.5rem;
+      }
+      .hero::before {
+        content: '';
+        position: absolute;
+        left: -40%;
+        top: -30%;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(123,233,255,0.28), transparent 55%);
+        filter: blur(40px);
+        animation: floatGlow 12s ease-in-out infinite;
+      }
+      .hero::after {
+        content: '';
+        position: absolute;
+        right: -20%;
+        bottom: -20%;
+        width: 260px;
+        height: 260px;
+        background: radial-gradient(circle, rgba(255,123,201,0.24), transparent 55%);
+        filter: blur(36px);
+        animation: floatGlowReverse 14s ease-in-out infinite;
+      }
+      .hero-title { font-size: 2.4rem; line-height: 1.05; color: #ffffff; margin-bottom: 0.85rem; letter-spacing: -0.03em; }
+      .hero-tag { font-size: 1rem; color: #d4e7ff; margin-bottom: 1rem; max-width: 720px; line-height: 1.7; }
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.85rem;
+        border-radius: 999px;
+        background: rgba(123,233,255,0.18);
+        border: 1px solid rgba(123,233,255,0.25);
+        color: #f7fcff;
+        font-size: 0.9rem;
+        margin-bottom: 0.95rem;
+        box-shadow: 0 18px 40px rgba(123,233,255,0.12);
+      }
+      .hero-right svg { filter: drop-shadow(0 18px 40px rgba(0,0,0,0.16)); }
+      .top-nav { background: rgba(8, 16, 34, 0.92); border-color: rgba(123,233,255,0.12); }
+      .top-nav .tab-btn { min-width: 105px; }
+      .hero .hero-glow { animation: pulseGlow 10s ease-in-out infinite; }
+      @keyframes floatGlow { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(15px, 10px) scale(1.05); } }
+      @keyframes floatGlowReverse { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-12px, -14px) scale(1.02); } }
+      @keyframes pulseGlow { 0%,100% { opacity: 0.22; } 50% { opacity: 0.14; transform: scale(1.03); } }
+      .hero-right {
+        position: relative;
+        width: 320px;
+        min-width: 320px;
+        min-height: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      .hero-right::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 22px;
+        background: radial-gradient(circle at 30% 20%, rgba(123,233,255,0.12), transparent 25%),
+                    radial-gradient(circle at 70% 80%, rgba(255,123,201,0.1), transparent 24%);
+        pointer-events: none;
+      }
+      .hero-animation {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+      }
+      .hero-animation .symbol {
+        position: absolute;
+        width: 58px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(14, 30, 62, 0.9);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+        backdrop-filter: blur(10px);
+      }
+      .hero-animation {
+        width: 100%;
+        height: 100%;
+      }
+      .hero-animation .symbol.pi {
+        top: 22%;
+        left: 24%;
+        transform: translate(-50%, -50%);
+        background: rgba(27, 82, 145, 0.95);
+        animation: orbitA 9s ease-in-out infinite;
+      }
+      .hero-animation .symbol.sigma {
+        top: 22%;
+        left: 76%;
+        transform: translate(-50%, -50%);
+        background: rgba(177, 56, 143, 0.92);
+        animation: orbitB 10.5s ease-in-out infinite;
+      }
+      .hero-animation .symbol.root {
+        top: 78%;
+        left: 24%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.95);
+        color: #051428;
+        border-color: rgba(15, 32, 70, 0.18);
+        animation: orbitC 12s ease-in-out infinite;
+      }
+      .hero-animation .symbol.x2 {
+        top: 78%;
+        left: 76%;
+        transform: translate(-50%, -50%);
+        background: rgba(111, 72, 178, 0.92);
+        animation: orbitD 11.2s ease-in-out infinite;
+      }
+      .hero-animation .symbol.verse {
+        top: 50%;
+        left: 50%;
+        width: 78px;
+        height: 78px;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, rgba(76, 170, 236, 0.98), rgba(170, 118, 239, 0.92));
+        color: #fff;
+        font-size: 0.95rem;
+        letter-spacing: 0.04em;
+        border: 1px solid rgba(255,255,255,0.28);
+        animation: pulseVerse 5s ease-in-out infinite;
+      }
+      @keyframes orbitA {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(10px, -14px) scale(1.04); }
+        100% { transform: translate(0, 0) scale(1); }
+      }
+      @keyframes orbitB {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(12px, 10px) scale(1.03); }
+        100% { transform: translate(0, 0) scale(1); }
+      }
+      @keyframes orbitC {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(-10px, 8px) scale(1.05); }
+        100% { transform: translate(0, 0) scale(1); }
+      }
+      @keyframes orbitD {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(-8px, -10px) scale(1.02); }
+        100% { transform: translate(0, 0) scale(1); }
+      }
+      @keyframes pulseVerse {
+        0%,100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.08); opacity: 0.95; }
+      }
+      .hero-glow {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        opacity: 0.28;
+        pointer-events: none;
+        background: radial-gradient(circle at 60% 30%, rgba(123, 233, 255, 0.18), transparent 18%),
+                    radial-gradient(circle at 35% 72%, rgba(255, 123, 201, 0.14), transparent 18%);
+      }
+      .hero-note-footer {
+        margin: 0 auto 1.5rem auto;
+        max-width: 280px;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        border-radius: 999px;
+        background: rgba(2, 16, 40, 0.8);
+        color: #d9f3ff;
+        font-size: 0.9rem;
+        font-weight: 600;
+        box-shadow: 0 14px 42px rgba(0, 0, 0, 0.18);
+      }
+      body.light-theme .hero-note-footer {
+        background: rgba(255, 255, 255, 0.96);
+        color: #0f2f56;
+        box-shadow: 0 14px 34px rgba(15, 32, 70, 0.12);
+      }
+      .hero-right::before {
+        z-index: -2;
+      }
+      .cta { position: relative; z-index: 1; }
+      label {
+        display: block;
+        margin: 0.5rem 0 0.3rem 0;
+        font-size: 0.9rem;
+        color: #b0c4de;
+      }
+      input, select, button {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.95rem;
+        border-radius: 6px;
+        border: 1px solid rgba(74, 158, 255, 0.2);
+        background: rgba(26, 42, 58, 0.5);
+        color: #e6eef8;
+        transition: all 0.3s ease;
+      }
+      input:focus, select:focus {
+        outline: none;
+        border-color: #4a9eff;
+        background: rgba(26, 42, 58, 0.8);
+        box-shadow: 0 0 10px rgba(74, 158, 255, 0.3);
+      }
+      button {
+        background: linear-gradient(135deg, #4a9eff 0%, #7b68ee 100%);
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+      }
+      button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74, 158, 255, 0.3); }
+      button:active { transform: translateY(0); }
+      .form-group { margin-bottom: 1rem; }
+      .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .result {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        background: rgba(74, 158, 255, 0.05);
+        border-left: 4px solid #4a9eff;
+        border-radius: 6px;
+        display: none;
+      }
+      .result.active { display: block; animation: slideIn 0.3s ease; }
+      @keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+      .result-title { font-size: 1.2rem; font-weight: 600; color: #4a9eff; margin-bottom: 0.5rem; }
+      .result-value { font-size: 1.5rem; font-weight: bold; color: #eb9090; margin: 0.5rem 0; }
+      .steps { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(74, 158, 255, 0.2); white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6; }
+      .formula-result { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+      .formula-item {
+        padding: 1rem;
+        background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+        border: 1px solid rgba(255,255,255,0.035);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: transform 0.28s cubic-bezier(.2,.9,.2,1), box-shadow 0.28s ease, border-color 0.28s ease;
+        box-shadow: 0 6px 18px rgba(2,6,23,0.55);
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .formula-item:hover {
+        transform: translateY(-10px) scale(1.02);
+        border-color: rgba(123,104,238,0.5);
+        box-shadow: 0 26px 60px rgba(34,20,70,0.45);
+      }
+      .formula-name { font-weight: 700; color: #ffd39b; font-size: 1.05rem; }
+      .formula-desc { color: #cbd7ee; font-size: 0.92rem; }
+      .formula-meta { display:flex; gap:0.5rem; color:#9fb7dd; font-size:0.82rem; align-items:center; flex-wrap:wrap; }
+      .katex-display { margin: 0.4rem 0; }
+      .formula-actions { margin-top: auto; display: flex; justify-content: flex-end; }
+      .formula-view-btn {
+        padding: 0.75rem 1rem;
+        border: none;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(123,233,255,0.18), rgba(184,143,255,0.22));
+        color: #ffffff;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+      }
+      .formula-view-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(123,233,255,0.16); background: linear-gradient(135deg, rgba(123,233,255,0.26), rgba(184,143,255,0.28)); }
+      .formula-name { font-weight: 600; color: #4a9eff; margin-bottom: 0.3rem; }
+      .formula-category { font-size: 0.8rem; color: #7b68ee; text-transform: uppercase; }
+      .formula-desc { font-size: 0.9rem; color: #b0c4de; margin-top: 0.5rem; }
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal.active { display: flex; }
+      .modal-content {
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+        padding: 1.25rem;
+        border-radius: 12px;
+        max-width: 720px;
+        max-height: 85vh;
+        overflow-y: auto;
+        border: 1px solid rgba(255,255,255,0.04);
+        box-shadow: 0 30px 80px rgba(4,6,20,0.7);
+      }
+      .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+      .close-btn { background: none; border: none; color: #e6eef8; font-size: 1.5rem; cursor: pointer; }
+      .loading { text-align: center; color: #4a9eff; }
+      @media (max-width: 768px) {
+        h1 { font-size: 1.8rem; }
+        .tabs { flex-direction: row; gap: 0.5rem; }
+        .tab-btn { width: auto; }
+        .form-row { grid-template-columns: 1fr; }
+        .formula-result { grid-template-columns: 1fr; }
+      }
+
+      /* Hero and CTA */
+      .hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+      }
+      .hero-left { flex: 1; }
+      .hero-title { font-size: 1.25rem; color: #eaf6ff; font-weight: 700; margin-bottom: 0.25rem; }
+      .hero-tag { font-size: 1.05rem; color: #bfe8ff; margin-bottom: 0.6rem; }
+      .cta {
+        padding: 0.7rem 1.1rem; border-radius: 999px; background: linear-gradient(90deg,#ff9f7b,#b88fff); color:#021025; font-weight:800; border:none; cursor:pointer; box-shadow:0 12px 40px rgba(184,143,255,0.18);
+      }
+      /* Sticky top navigation */
+      .top-nav {
+        position: sticky;
+        top: 12px;
+        z-index: 1200;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:1rem;
+        padding:0.5rem 0.75rem;
+        border-radius:12px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+        border:1px solid rgba(255,255,255,0.03);
+        box-shadow: 0 6px 18px rgba(2,6,23,0.45);
+        backdrop-filter: blur(8px) saturate(120%);
+        margin-bottom: 1rem;
+      }
+      .nav-left { display:flex; gap:0.75rem; align-items:center }
+      .logo-small { font-weight:800; color: #ffd39b; font-size:1rem }
+      .nav-actions { display:flex; gap:0.5rem; align-items:center }
+
+      /* Reveal animation */
+      .reveal { opacity: 0; transform: translateY(18px) scale(0.99); transition: opacity 520ms cubic-bezier(.2,.9,.2,1), transform 520ms cubic-bezier(.2,.9,.2,1); }
+      .reveal.visible { opacity: 1; transform: translateY(0) scale(1); }
+
+      /* Responsive tweaks */
+      @media (max-width: 900px) {
+        .hero { flex-direction: column; align-items: flex-start; }
+        .hero-right { width: 100%; min-width: auto; text-align: left; }
+        .top-nav { top: 8px; padding: 0.5rem; }
+        .container { padding-left: 1rem; padding-right: 1rem; }
+      }
+      @media (max-width: 480px) {
+        #heading1 { font-size: 3rem; }
+        #heading2 { font-size: 1.4rem; }
+        .cta { padding: 0.55rem 0.9rem; font-size: 0.95rem }
+        .tab-btn { padding: 0.45rem 0.7rem; font-size: 0.85rem }
+        .card { padding: 1rem; }
+      }
+
+      /* Light theme overrides (applied when body.light-theme exists) */
+      body.light-theme {
+        background: linear-gradient(180deg, #f7fbff 0%, #eef6ff 100%);
+        color: #08203a;
+      }
+      body.light-theme .card {
+        background: #ffffff;
+        border-color: rgba(2,6,23,0.04);
+        color: #071124;
+      }
+      body.light-theme .hero {
+        background: rgba(255,255,255,0.96);
+        border-color: rgba(2,6,23,0.08);
+        box-shadow: 0 26px 70px rgba(39, 71, 112, 0.08);
+      }
+      body.light-theme .hero-title { color: #062a4c; }
+      body.light-theme .hero-tag { color: #315a81; }
+      body.light-theme .hero-badge {
+        background: rgba(74, 158, 255, 0.14);
+        border-color: rgba(74, 158, 255, 0.18);
+        color: #0d3c60;
+      }
+      body.light-theme .top-nav {
+        background: rgba(255,255,255,0.96);
+        border-color: rgba(2,6,23,0.08);
+        box-shadow: 0 18px 40px rgba(9, 31, 66, 0.08);
+      }
+      body.light-theme .top-nav .tab-btn {
+        color: #0b3b5a;
+      }
+      body.light-theme .card h3 { color: #0b63a8; }
+      body.light-theme .tab-btn {
+        background: rgba(2,6,23,0.08);
+        border-color: rgba(2,6,23,0.14);
+        color:#0b3b5a;
+      }
+      body.light-theme .tab-btn:hover {
+        background: rgba(2,6,23,0.12);
+      }
+      body.light-theme .tab-btn.active {
+        color: #021025;
+        background: linear-gradient(90deg, #cfeeff, #e8d4ff);
+        border-color: rgba(74,158,255,0.3);
+      }
+      body.light-theme .cta { box-shadow: 0 12px 40px rgba(184,143,255,0.08); }
+      body.light-theme .formula-name { color: #0f5b8a }
+      body.light-theme .formula-desc { color: #234b66 }
+      body.light-theme .katex-display { color: #0b3b5a }
+      body.light-theme .hero-animation .symbol {
+        background: rgba(255, 255, 255, 0.96);
+        color: #071427;
+        border-color: rgba(15, 32, 70, 0.16);
+        box-shadow: 0 18px 40px rgba(14, 35, 64, 0.16);
+      }
+      body.light-theme .hero-animation .symbol.pi { background: rgba(145, 200, 255, 0.98); }
+      body.light-theme .hero-animation .symbol.sigma { background: rgba(255, 163, 210, 0.92); }
+      body.light-theme .hero-animation .symbol.root { background: rgba(255, 255, 255, 0.96); }
+      body.light-theme .hero-animation .symbol.x2 { background: rgba(205, 165, 255, 0.92); }
+      body.light-theme .hero-animation .symbol.verse { background: linear-gradient(135deg, rgba(20, 90, 170, 0.95), rgba(140, 70, 215, 0.92)); color: #fff; }
+      .theme-toggle-btn { padding: 0.4rem 0.6rem; border-radius:8px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04); cursor:pointer }
+      body, .card, .cta { transition: background 320ms ease, color 320ms ease, box-shadow 320ms ease, transform 320ms ease; }
+    </style>
+    <!-- KaTeX for rendering formulas nicely -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1 id="heading1">🔢</h1><h1 id="heading2">MathVerse</h1>
+      <p class="subtitle">All-in-One Mathematics Learning & Calculation Platform</p>
+    </header>
+    <div class="container">
+      <div class="top-nav reveal">
+        <div class="nav-left">
+          <div class="logo-small">MathVerse</div>
+          <div style="color:#9fb7dd; font-size:0.95rem;">Learn. Solve. Master.</div>
+        </div>
+        <div class="nav-actions">
+          <button class="tab-btn" data-tab="formulas">Formulas</button>
+          <button class="tab-btn" data-tab="ai">AI Assistant</button>
+          <button class="cta"j onclick="document.querySelector('.tab-btn[data-tab=\'ai\']').click();">Try AI</button>
+          <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme">🌙</button>
+        </div>
+      </div>
+      <div class="hero reveal">
+        <div class="hero-left">
+          <div class="hero-badge">✨ AI-powered formula search</div>
+          <div class="hero-title">Fast answers. Beautiful learning.</div>
+          <div class="hero-tag">Search formulas, get step-by-step solutions, and learn with examples designed for every level.</div>
+          <div>
+            <button class="cta" onclick="document.querySelector('.tab-btn[data-tab=\'ai\']').click();">Try AI Assistant</button>
+          </div>
+        </div>
+        <div class="hero-right">
+          <div class="hero-animation" aria-hidden="true">
+            <span class="symbol pi">π</span>
+            <span class="symbol sigma">Σ</span>
+            <span class="symbol root">√</span>
+            <span class="symbol x2">x²</span>
+            <span class="symbol verse">MathVerse</span>
+          </div>
+          <div class="hero-glow"></div>
+        </div>
+      </div>
+      <div class="hero-note-footer">Trusted by students & teachers</div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="basic">Basic</button>
+        <button class="tab-btn" data-tab="scientific">Scientific</button>
+        <button class="tab-btn" data-tab="matrix">Matrix</button>
+        <button class="tab-btn" data-tab="geometry">Geometry</button>
+        <button class="tab-btn" data-tab="statistics">Statistics</button>
+        <button class="tab-btn" data-tab="finance">Finance</button>
+        <button class="tab-btn" data-tab="formulas">Formulas</button>
+        <button class="tab-btn" data-tab="ai">AI Assistant</button>
+        <button class="tab-btn" data-tab="learning">Learning</button>
+        <button class="tab-btn" data-tab="quizzes">Quizzes</button>
+      </div>
+
+      <!-- Basic Calculator -->
+      <div id="basic" class="tab-content active">
+        <div class="card">
+          <h3>Basic Calculator</h3>
+          <div class="form-group">
+            <label>Enter Expression (e.g., 2 + 3 * 4):</label>
+            <input id="basicExpr" type="text" placeholder="e.g., (10 + 5) * 2" />
+            <button id="basicCalc">Calculate</button>
+          </div>
+          <div id="basicResult" class="result"></div>
+        </div>
+      </div>
+
+      <!-- Scientific Calculator -->
+      <div id="scientific" class="tab-content">
+        <div class="card">
+          <h3>Scientific Calculator</h3>
+          <div class="form-group">
+            <label>Operation:</label>
+            <select id="scientificOp">
+              <option value="trigonometric">Trigonometric</option>
+              <option value="logarithmic">Logarithmic</option>
+              <option value="exponential">Exponential</option>
+              <option value="root">Root</option>
+              <option value="factorial">Factorial</option>
+              <option value="percentage">Percentage</option>
+            </select>
+          </div>
+          <div id="scientificParams"></div>
+          <button id="scientificCalc">Calculate</button>
+          <div id="scientificResult" class="result"></div>
+        </div>
+      </div>
+
+      <!-- Matrix Calculator -->
+      <div id="matrix" class="tab-content">
+        <div class="card">
+          <h3>Matrix Calculator</h3>
+          <div class="form-group">
+            <label>Operation:</label>
+            <select id="matrixOp">
+              <option value="add">Add</option>
+              <option value="multiply">Multiply</option>
+              <option value="determinant">Determinant</option>
+              <option value="inverse">Inverse</option>
+              <option value="transpose">Transpose</option>
+            </select>
+          </div>
+          <div id="matrixParams"></div>
+          <button id="matrixCalc">Calculate</button>
+          <div id="matrixResult" class="result"></div>
+        </div>
+      </div>
+
+      <!-- Geometry Calculator -->
+      <div id="geometry" class="tab-content">
+        <div class="card">
+          <h3>Geometry Calculator</h3>
+          <div class="form-group">
+            <label>Shape:</label>
+            <select id="geoShape">
+              <option value="circle">Circle</option>
+              <option value="triangle">Triangle</option>
+              <option value="rectangle">Rectangle</option>
+              <option value="sphere">Sphere</option>
+              <option value="cylinder">Cylinder</option>
+            </select>
+          </div>
+          <div id="geoParams"></div>
+          <button id="geoCalc">Calculate</button>
+          <div id="geoResult" class="result"></div>
+        </div>
+      </div>
+
+      <!-- Statistics Calculator -->
+      <div id="statistics" class="tab-content">
+        <div class="card">
+          <h3>Statistics Calculator</h3>
+          <div class="form-group">
+            <label>Operation:</label>
+            <select id="statOp">
+              <option value="mean">Mean</option>
+              <option value="median">Median</option>
+              <option value="mode">Mode</option>
+              <option value="variance">Variance</option>
+              <option value="standardDeviation">Standard Deviation</option>
+              <option value="quartiles">Quartiles</option>
+              <option value="combination">Combination (nCr)</option>
+              <option value="permutation">Permutation (nPr)</option>
+            </select>
+          </div>
+          <div id="statParams"></div>
+          <button id="statCalc">Calculate</button>
+          <div id="statResult" class="result"></div>
+        </div>
+      </div>
+
+      <!-- Finance Calculator -->
+      <div id="finance" class="tab-content">
+        <div class="card">
+          <h3>Finance Calculator</h3>
+          <div class="form-group">
+            <label>Calculation:</label>
+            <select id="financeOp">
+              <option value="simpleInterest">Simple Interest</option>
+              <option value="compoundInterest">Compound Interest</option>
+              <option value="futureValueAnnuity">Future Value Annuity</option>
+              <option value="presentValueAnnuity">Present Value Annuity</option>
+              <option value="loanPayment">Loan Payment (EMI)</option>
+              <option value="roi">Return on Investment</option>
+              <option value="depreciation">Depreciation</option>
+              <option value="breakEvenPoint">Break-Even Point</option>
+            </select>
+          </div>
+          <div id="financeParams"></div>
+          <button id="financeCalc">Calculate</button>
+          <div id="financeResult" class="result"></div>
+        </div>
+      </div>
+
+      <!-- Formula Library -->
+      <div id="formulas" class="tab-content">
+        <div class="card">
+          <h3>Formula Library</h3>
+          <div class="form-group">
+            <label>Search:</label>
+            <input id="formulaSearch" type="text" placeholder="Search formulas (e.g., quadratic, circle)" />
+            <label>Category:</label>
+            <select id="formulaCategory">
+              <option value="">All Categories</option>
+              <option value="algebra">Algebra</option>
+              <option value="geometry">Geometry</option>
+              <option value="trigonometry">Trigonometry</option>
+              <option value="calculus">Calculus</option>
+              <option value="statistics">Statistics</option>
+              <option value="physics">Physics</option>
+              <option value="finance">Finance</option>
+            </select>
+            <button id="formulaSearch-btn">Search</button>
+          </div>
+          <div id="formulasResult" class="result"></div>
+        </div>
+      </div>
+
+      <!-- AI Assistant -->
+      <div id="ai" class="tab-content">
+        <div class="card">
+          <h3>AI Math Assistant</h3>
+          <div class="form-group">
+            <label>How would you like to input your problem?</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+              <button id="aiTextInput-btn" style="margin: 0;">Text Input</button>
+              <button id="aiVoiceInput-btn" style="margin: 0;">Voice Input</button>
+              <button id="aiOCRInput-btn" style="margin: 0;">Camera/Upload</button>
+            </div>
+          </div>
+
+          <!-- Text Input -->
+          <div id="aiTextSection" style="display: none;">
+            <div class="form-group">
+              <label>Enter your math problem:</label>
+              <textarea id="aiProblem" placeholder="E.g., Solve x² + 5x + 6 = 0 or Find the derivative of f(x) = x³ + 2x" style="width: 100%; min-height: 100px; padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(74, 158, 255, 0.2); background: rgba(26, 42, 58, 0.5); color: #e6eef8; font-family: monospace;"></textarea>
+              <button id="aiSolve-btn">Solve Problem</button>
+            </div>
+          </div>
+
+          <!-- Voice Input -->
+          <div id="aiVoiceSection" style="display: none;">
+            <div class="form-group">
+              <label>Transcribed text:</label>
+              <textarea id="aiVoiceTranscript" readonly style="width: 100%; min-height: 80px; padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(74, 158, 255, 0.2); background: rgba(26, 42, 58, 0.5); color: #b0c4de;"></textarea>
+              <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+                <button id="aiVoiceStart-btn">Start Listening</button>
+                <button id="aiVoiceStop-btn" style="display: none;">Stop Listening</button>
+              </div>
+              <button id="aiVoiceSolve-btn" style="display: none;">Solve from Voice</button>
+            </div>
+          </div>
+
+          <!-- OCR Input -->
+          <div id="aiOCRSection" style="display: none;">
+            <div class="form-group">
+              <label>Upload image or capture from camera:</label>
+              <input id="aiOCRUpload" type="file" accept="image/*" style="margin: 0.5rem 0;" />
+              <button id="aiOCRProcess-btn">Process Image</button>
+              <label style="margin-top: 1rem;">Extracted text:</label>
+              <textarea id="aiOCRText" style="width: 100%; min-height: 100px; padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(74, 158, 255, 0.2); background: rgba(26, 42, 58, 0.5); color: #e6eef8;"></textarea>
+              <button id="aiOCRSolve-btn" style="display: none;">Solve from OCR</button>
+            </div>
+          </div>
+
+          <!-- AI Result -->
+          <div id="aiResult" class="result">
+            <div class="result-title">Solution</div>
+            <div id="aiSolutionText" style="color: #e6eef8; margin: 0.5rem 0;"></div>
+            <div id="aiSteps" class="steps"></div>
+            <div id="aiConcepts" style="margin-top: 1rem; padding: 0.5rem; background: rgba(123, 104, 238, 0.1); border-left: 4px solid #7b68ee; border-radius: 4px;">
+              <strong style="color: #7b68ee;">Key Concepts:</strong>
+              <div id="aiConceptsList" style="margin-top: 0.5rem;"></div>
+            </div>
+          </div>
+
+          <hr style="margin: 2rem 0; border: none; border-top: 1px solid rgba(74, 158, 255, 0.2);">
+
+          <!-- AI Formula Search (ChatGPT-like) -->
+          <div style="margin-top: 2rem;">
+            <h4 style="color: #4a9eff; margin-bottom: 1rem;">🔍 Search Formulas by Topic</h4>
+            <p style="color: #b0c4de; font-size: 0.9rem; margin-bottom: 1rem;">Ask any question about formulas - like ChatGPT! Examples: "How to calculate circle area?", "What formula for compound interest?", "Trigonometry formulas"</p>
+            <div class="form-group">
+              <label>Your Question or Topic:</label>
+              <textarea id="aiFormulaQuery" placeholder="E.g., How to find the area of a circle? Or: I need trigonometry formulas. Or: Probability formulas" style="width: 100%; min-height: 80px; padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(74, 158, 255, 0.2); background: rgba(26, 42, 58, 0.5); color: #e6eef8; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;"></textarea>
+              <button id="aiFormulaSearch-btn" style="background: linear-gradient(135deg, #4a9eff 0%, #7b68ee 100%); border: none; cursor: pointer; font-weight: 600; margin-top: 1rem;">Search Formulas</button>
+            </div>
+            <div id="aiFormulaResult" class="result">
+              <div class="result-title">Recommended Formulas</div>
+              <div id="aiFormulaSearchText" style="color: #e6eef8; margin: 0.5rem 0;"></div>
+              <div id="aiFormulasList" style="margin-top: 1rem;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Learning Modules -->
+      <div id="learning" class="tab-content">
+        <div class="card">
+          <h3>Learning Modules</h3>
+          <div class="form-group">
+            <label>Filter by Level:</label>
+            <select id="learningLevelFilter">
+              <option value="">All Levels</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <label>Filter by Category:</label>
+            <select id="learningCategoryFilter">
+              <option value="">All Categories</option>
+            </select>
+            <button id="learningFilter-btn">Apply Filter</button>
+          </div>
+          <div id="learningModulesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-top: 1rem;"></div>
+          <div id="learningDetail" class="result" style="margin-top: 1rem;"></div>
+        </div>
+      </div>
+
+      <!-- Quizzes -->
+      <div id="quizzes" class="tab-content">
+        <div class="card">
+          <h3>Quizzes & Assessments</h3>
+          <div id="quizzesListView">
+            <div class="form-group">
+              <label>Select a quiz to start:</label>
+              <div id="quizzesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;"></div>
+            </div>
+          </div>
+
+          <div id="quizTakingView" style="display: none;">
+            <div style="margin-bottom: 1rem;">
+              <button id="quizBack-btn">← Back to Quiz List</button>
+            </div>
+            <div id="quizHeader" style="margin-bottom: 1.5rem;"></div>
+            <div id="quizQuestions"></div>
+            <button id="quizSubmit-btn" style="margin-top: 2rem;">Submit Quiz</button>
+          </div>
+
+          <div id="quizResultsView" style="display: none;">
+            <div style="margin-bottom: 1rem;">
+              <button id="quizReturnToList-btn">← Back to Quiz List</button>
+            </div>
+            <div id="quizResults"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formula Detail Modal -->
+    <div id="formulaModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="formulaModalTitle"></h3>
+          <button class="close-btn" onclick="closeFormulaModal()">✕</button>
+        </div>
+        <div id="formulaModalBody"></div>
+      </div>
+    </div>
+
+    <script src="/ocr.js"></script>
+    <script src="/voice.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

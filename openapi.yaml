@@ -1,0 +1,210 @@
+openapi: 3.0.0
+info:
+  title: MathVerse API
+  version: 0.1.0
+  description: All-in-one mathematics learning platform API
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+
+tags:
+  - name: Calculators
+    description: Various calculator modules (basic, scientific, matrix, geometry, etc.)
+  - name: Formulas
+    description: Formula library with searchable database
+  - name: Auth
+    description: Authentication and user management
+  - name: AI Assistant
+    description: AI-powered math problem solver
+
+paths:
+  /calc:
+    post:
+      tags:
+        - Calculators
+      summary: Execute a calculation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - expression
+              properties:
+                type:
+                  type: string
+                  enum: [basic, scientific, matrix, geometry, statistics, finance, equation]
+                expression:
+                  type: string
+                  description: Mathematical expression or parameters
+      responses:
+        '200':
+          description: Calculation successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  result:
+                    type: number
+                  steps:
+                    type: array
+                    items:
+                      type: string
+                  visualization:
+                    type: object
+                    description: Graph or diagram data (optional)
+        '400':
+          description: Bad request
+
+  /formulas:
+    get:
+      tags:
+        - Formulas
+      summary: Search formulas
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: Search query
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [algebra, geometry, trigonometry, calculus, statistics, physics, chemistry, finance]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of formulas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Formula'
+
+  /formulas/{id}:
+    get:
+      tags:
+        - Formulas
+      summary: Get formula details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Formula details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDetail'
+
+  /ai/solve:
+    post:
+      tags:
+        - AI Assistant
+      summary: Solve a math problem with AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - problem
+              properties:
+                problem:
+                  type: string
+                  description: Math problem in text or LaTeX
+                method:
+                  type: string
+                  enum: [text, ocr, voice]
+                  default: text
+      responses:
+        '200':
+          description: AI solution
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  solution:
+                    type: string
+                  steps:
+                    type: array
+                    items:
+                      type: string
+                  alternateApproaches:
+                    type: array
+                    items:
+                      type: string
+                  concepts:
+                    type: array
+                    items:
+                      type: string
+
+components:
+  schemas:
+    Formula:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        formula:
+          type: string
+          description: LaTeX formula
+        description:
+          type: string
+
+    FormulaDetail:
+      allOf:
+        - $ref: '#/components/schemas/Formula'
+        - type: object
+          properties:
+            variables:
+              type: object
+              description: Variable definitions
+            derivation:
+              type: string
+              description: How the formula is derived
+            examples:
+              type: array
+              items:
+                type: object
+                properties:
+                  problem:
+                    type: string
+                  solution:
+                    type: string
+            practicalUses:
+              type: array
+              items:
+                type: string
+            relatedFormulas:
+              type: array
+              items:
+                type: string
